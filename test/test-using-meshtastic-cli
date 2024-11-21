@@ -1,0 +1,5 @@
+meshtastic --ack --host  heltec-1ce0 --dest '!6c72fe5c' --sendtext "status request"  --ch-index 1
+
+#meshtastic --host  heltec-1ce0 --dest '!43b6e594' --sendtext "status request"  --ch-index 1
+
+

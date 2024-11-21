@@ -1,0 +1,11 @@
+#!/bin/bash
+# I fix the ip address used by each radio and then make an entry in /etc/hosts
+#
+# Wifi access to radio:
+#python3 lora.py heltec-fe5c
+python3 lora-query.py heltec-1ce0 
+
+#With a serial line connected radio we could do this:
+#
+#python3 lora-query.py
+

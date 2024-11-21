@@ -1,0 +1,14 @@
+#!/bin/bash
+
+
+mosquitto_pub -h croft -t 'msh/EU_868/6c72fe5c/cmd' -m "!43b6e594:1:status request"
+mosquitto_pub -h croft -t 'msh/EU_868/43b6e594/cmd' -m "!6c72fe5c:1:status request"
+
+#mosquitto_pub -h croft -t 'msh/EU_868/6c72fe5c/cmd' -m "!3364cd14:1:status request"
+
+#mosquitto_pub -h croft -t 'msh/EU_868/6c72fe5c/cmd' -m "!43b6d0a0:1:status request"
+#mosquitto_pub -h croft -t 'msh/EU_868' -m "!43b6d0a0:1:status request"
+
+#mosquitto_pub -h croft -t 'msh/EU_868/433c1ce0/cmd' -m "!43b6d0a0:1:status request"
+#mosquitto_pub -h croft -t 'msh/EU_868/433c1ce0/cmd' -m "!43b6e594:1:status request"
+#mosquitto_sub -h croft -t 'msh/EU_868/#'
