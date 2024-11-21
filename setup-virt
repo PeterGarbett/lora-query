@@ -1,0 +1,9 @@
+#!/bin/bash
+
+virtualenv .
+source bin/activate
+
+pip install meshtastic
+pip install pubsub
+pip install paho_mqtt
+

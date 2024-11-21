@@ -1,0 +1,16 @@
+[Unit]
+Description=Supply system status in response to request via lora
+
+[Service]
+Type=simple
+User=embed
+Group=embed
+# If radio is on is on serial line:
+#ExecStart=/home/embed/lora-query/bin/python3 /home/embed/lora-query/lora-query.py 
+# Otherwise specify IP
+ExecStart=/home/embed/lora-query/bin/python3 /home/embed/lora-query/lora-query.py  heltec-fe5c
+Restart=always
+RestartSec=5s
+
+[Install]
+WantedBy=multi-user.target
