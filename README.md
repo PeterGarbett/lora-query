@@ -39,7 +39,7 @@ response.py     # Definition of the commands and responses.
 setup-virt      # setup python virtual environment
 
 status.py       - not present. Returns a site specific status string
-find_netwok.py  - not present. Returns location of the mqtt broker
+find_network.py - not present. Returns location of the mqtt broker
 
 
 
