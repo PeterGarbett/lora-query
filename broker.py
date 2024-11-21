@@ -11,7 +11,6 @@ def broker():
         broke = find_network.site()
         return broke
     except:
-        return "croft"
         return "localhost"
 
 
