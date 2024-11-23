@@ -133,8 +133,17 @@ def end_loop(interface):
         # or a comms error has occurred.
         # On failure I want to exit so systemctl can restart
 
+        active = 0
         while interface.isConnected.is_set() and not comms_error:
             sys.stdout.flush()
+#
+#           Let outside world know we are active
+
+            if 0 == (active % 60):
+                active = 0
+                print("Alive")
+            active += 1
+
             time.sleep(60)
 
         print("Interface dropped or comms error, exiting")
@@ -143,7 +152,7 @@ def end_loop(interface):
         sys.exit()
 
     except Exception as err:
-        print(err)
+        print("Exception in main control loop:", err)
 
     except KeyboardInterrupt:
         print("Script terminated by user")
