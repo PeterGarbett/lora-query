@@ -4,6 +4,7 @@ import time
 import sys
 import mqtt
 import response
+import threading
 
 mqtt_client = None
 cmd_topic = None
@@ -11,7 +12,6 @@ in_topic = None
 out_topic = None
 
 comms_error = False
-
 
 def received(packet, interface, node_list, shortname, fromnum, channel, message):
     global mqtt_client
@@ -86,6 +86,13 @@ def on_mqtt_message(client, userdata, msg):
         print(err, "Failed to send message")
         comms_error = True  # Communicate occurence of failure to the mainline
 
+def crash(args):
+    global comms_error
+
+    print("Exception caught in crash handler")
+    print(f'caught {args.exc_type} with value {args.exc_value} in thread {args.thread}\n')
+    comms_error = True
+   # sys.exit()
 
 def end_loop(interface):
     """connect to mqtt, subscribe, and loop and wait - exit on error"""
@@ -121,6 +128,8 @@ def end_loop(interface):
 
     print("Start operating radio")
 
+    threading.excepthook = crash
+
     try:
         mqtt_client = mqtt.connect_and_subscribe(cmd_topic, on_mqtt_message)
         mqtt_client.loop_start()
@@ -141,7 +150,8 @@ def end_loop(interface):
 
             if 0 == (active % 60):
                 active = 0
-                print("Alive")
+                alive = threading.active_count()
+                print("Alive with threads:",alive)
             active += 1
 
             time.sleep(60)
