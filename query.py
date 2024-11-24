@@ -10,7 +10,6 @@ import paho.mqtt.client as mqtt
 import broker
 import mqtt
 
-
 local_radio_id = None
 remote_radio_id = None
 topic = None
@@ -18,22 +17,21 @@ message = None
 channel = 1
 broker = broker.broker()
 
+QUEUE_CHECK_INTERVAL = 1    # Period in seconds to check for incoming messages
+RESEND_RATE = 30            # Resend request at this number of check intervals
 
 mqttc = None
 
-
 message_input = Queue()
-
 
 def on_mqtt_message(client, userdata, message):
     """This gets called back by mqtt, put the message on a queue
     to get it to the mainline code"""
     global message_input
-    print("mqtt message:", (message.payload).decode())
+#    print("mqtt message:", (message.payload).decode())
     message_input.put((message.payload).decode())
 
 usage = "usage: python3 lora_remote_status_request.py local_radio_id remote_radio_id"
-
 
 def valid_radio_id(dest, digits):
     """This is user input from the command line so can easily be in error
@@ -53,6 +51,7 @@ def valid_radio_id(dest, digits):
 
 
 def query():
+    """ Send off a status query at intervals until a reply appears """
     global message_input
     global mqttc
     global message
@@ -75,7 +74,8 @@ def query():
 
     print(f"Using local radio: {local_radio_id} remote radio: {remote_radio_id}")
 
-    message = "!" + remote_radio_id + ":" + str(channel) + ":status request"
+    base_message = "!" + remote_radio_id + ":" + str(channel) + ":"
+    message = base_message + "status request"
 
     topic = "msh/EU_868/" + local_radio_id + "/"
     cmd_topic = topic + "cmd"
@@ -83,24 +83,32 @@ def query():
 
     mqttc = mqtt.connect_and_subscribe(in_topic, on_mqtt_message)
 
-    try:
-        mqttc.loop_start()
+    mqttc.loop_start()
+    once = False
 
-        message_rec = False
-        while not message_rec:
-            mqtt.publish(message, cmd_topic, mqttc)
-            time.sleep(60)  # Sleep to give time for message to be picked up
+    message = "status request"
+    prod = 0
+
+    try:
+        while True:
+
+            if 0 == prod % RESEND_RATE :
+                mqtt.publish(base_message + message, cmd_topic, mqttc)
+            prod += 1
+
             sys.stdout.flush()
+
             try:
-                while True:
-                    message = message_input.get_nowait()
-                    if local_radio_id in message and remote_radio_id in str(message):
-                        print("remote system status :>", message, "<")
-                        mqttc.loop_stop()
-                        message_rec = True
-                        break
+                input_message = message_input.get_nowait()
+                if local_radio_id in input_message and remote_radio_id in input_message:
+                    print("Recieved>", input_message, "<")
+                    break
+
+                time.sleep(QUEUE_CHECK_INTERVAL)
+                continue
+
             except queue.Empty:
-                time.sleep(45)
+                time.sleep(1)
                 continue
             except Exception as err:
                 print(err)
