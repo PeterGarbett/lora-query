@@ -51,27 +51,49 @@ def parse_node_info(node_info):
 
 
 def parse_packet(packet, interface, node_list):
-    try:
-        if packet["decoded"].get("portnum") == "TEXT_MESSAGE_APP":
-            message = packet["decoded"]["payload"].decode("utf-8")
-            fromnum = packet["fromId"]
-            channel = packet["channel"]
 
-            shortname = next(
-                (
-                    node["user"]["shortName"]
-                    for node in node_list
-                    if node["num"] == fromnum
-                ),
-                "Unknown",
-            )
-            converse.received(
-                packet, interface, node_list, shortname, fromnum, channel, message
-            )
-    except KeyError:
-        pass  # Ignore KeyError silently
+    try:
+        if packet["decoded"].get("portnum") != "TEXT_MESSAGE_APP":
+            return
+
+    except Exception as err:
+        print("Error decoding packet", err)
+        return
+
+    try:
+        message = packet["decoded"]["payload"].decode("utf-8")
+    except Exception as err:
+        print("Message extraction:", err)
+        message = "error:undecoded"
+
+    try:
+        fromnum = packet["fromId"]
+    except Exception as err:
+        print("Finding source radio:", err)
+        fromnum = "Unknown"
+
+    try:
+        channel = packet["channel"]
+    except Exception as err:
+        print("Error in channel determination:", err)
+        channel = -1
+
+    try:
+        shortname = next(
+            (node["user"]["shortName"] for node in node_list if node["num"] == fromnum),
+            "Unknown",
+        )
+
+    except Exception as err:
+        print("lora-query exception:", err)
+    # except KeyError:
+    #    pass  # Ignore KeyError silently
     except UnicodeDecodeError:
         pass  # Ignore UnicodeDecodeError silently
+
+    converse.received(
+        packet, interface, node_list, shortname, fromnum, channel, message
+    )
 
 
 def on_receive(packet, interface, node_list):
