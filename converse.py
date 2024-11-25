@@ -2,16 +2,19 @@
 
 import time
 import sys
+import threading
 import mqtt
 import response
-import threading
 
 mqtt_client = None
 cmd_topic = None
 in_topic = None
 out_topic = None
 
+CMD_CHANNEL = 1
+
 comms_error = False
+
 
 def received(packet, interface, node_list, shortname, fromnum, channel, message):
     global mqtt_client
@@ -23,17 +26,31 @@ def received(packet, interface, node_list, shortname, fromnum, channel, message)
         user = interface.getMyNodeInfo().get("user")
         ident = user.get("id")
         print("received on radio:", ident)
-        in_mess = fromnum + ":" + str(channel) + ":" + message
+        if -1 == channel:
+            channel_str = "Unknown channel"
+        else:
+            channel_str = str(channel)
+
+        in_mess = fromnum + ":" + channel_str + ":" + message
         mqtt.publish(in_mess, in_topic, mqtt_client)
     except Exception as err:
-        print(err)
+        print("converse.received error", err)
         comms_error = True
         return
 
-    # Channel 1 is encrypted so we know its authorised
-
-    if channel == 0:
+    # The command channel is encrypted so we know its authorised
+    # Filter out the others
+    if channel != CMD_CHANNEL:
         print(f"{fromnum}:{channel}:{message}")
+        try:
+            import send_email
+
+            send_email.message(
+                "lora radio " + ident + " received message",
+                fromnum + ":" + channel_str + ":" + message,
+            )
+        except Exception as err:
+            print("Error calling message.message", err)
         return
 
     message.replace("\n", "")
@@ -45,7 +62,7 @@ def received(packet, interface, node_list, shortname, fromnum, channel, message)
     # Send answer back to where the query came from
 
     if up:
-        out = fromnum + ":" + str(channel) + ":" + up + ""
+        out = fromnum + ":" + channel_str + ":" + up + ""
         mqtt.publish(out, out_topic, mqtt_client)
         try:
             result = interface.sendText(out, destinationId=fromnum, channelIndex=1)
@@ -86,13 +103,19 @@ def on_mqtt_message(client, userdata, msg):
         print(err, "Failed to send message")
         comms_error = True  # Communicate occurence of failure to the mainline
 
+
 def crash(args):
     global comms_error
 
     print("Exception caught in crash handler")
-    print(f'caught {args.exc_type} with value {args.exc_value} in thread {args.thread}\n')
+    print(
+        f"caught {args.exc_type} with value {args.exc_value} in thread {args.thread}\n"
+    )
     comms_error = True
-   # sys.exit()
+
+
+# sys.exit()
+
 
 def end_loop(interface):
     """connect to mqtt, subscribe, and loop and wait - exit on error"""
@@ -145,13 +168,13 @@ def end_loop(interface):
         active = 0
         while interface.isConnected.is_set() and not comms_error:
             sys.stdout.flush()
-#
-#           Let outside world know we are active
+            #
+            #           Let outside world know we are active
 
             if 0 == (active % 60):
                 active = 0
                 alive = threading.active_count()
-                print("Alive with threads:",alive)
+                print("Alive with ", alive, " active threads:")
             active += 1
 
             time.sleep(60)
