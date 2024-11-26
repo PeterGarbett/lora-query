@@ -52,13 +52,17 @@ def parse_node_info(node_info):
 
 def parse_packet(packet, interface, node_list):
 
+    packet_type = None
+    
     try:
-        if packet["decoded"].get("portnum") != "TEXT_MESSAGE_APP":
-            return
+        packet_type = packet["decoded"].get("portnum")
 
     except Exception as err:
         print("Error decoding packet", err)
-        pass
+        return  
+
+    if packet_type != "TEXT_MESSAGE_APP":
+        return
 
     try:
         message = packet["decoded"]["payload"].decode("utf-8")
