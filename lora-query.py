@@ -58,7 +58,7 @@ def parse_packet(packet, interface, node_list):
 
     except Exception as err:
         print("Error decoding packet", err)
-        return
+        pass
 
     try:
         message = packet["decoded"]["payload"].decode("utf-8")
