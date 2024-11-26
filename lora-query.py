@@ -53,19 +53,33 @@ def parse_node_info(node_info):
 def parse_packet(packet, interface, node_list):
 
     packet_type = None
-    
+
     try:
-        packet_type = packet["decoded"].get("portnum")
+        deco = packet["decoded"]
+
+    except :
+        # Quite common so ignore silently
+        return
+
+    try:
+        packet_type = deco.get("portnum")
 
     except Exception as err:
-        print("Error decoding packet", err)
-        return  
+        # This I expect to be extremely unlikely
+        print("Determine packet type:", err)
+        return
+
+    # Lots of uninteresting packet types to silently ignore
 
     if packet_type != "TEXT_MESSAGE_APP":
         return
 
     try:
         message = packet["decoded"]["payload"].decode("utf-8")
+
+    except UnicodeDecodeError:
+        pass  # Ignore UnicodeDecodeError silently
+
     except Exception as err:
         print("Message extraction:", err)
         message = "error:undecoded"
@@ -79,8 +93,8 @@ def parse_packet(packet, interface, node_list):
     try:
         channel = packet["channel"]
     except Exception as err:
-        print("Error in channel determination:", err)
-        channel = -1
+        # No channel number seems to indicate channel 0
+        channel = 0
 
     try:
         shortname = next(
@@ -92,8 +106,6 @@ def parse_packet(packet, interface, node_list):
         print("lora-query exception:", err)
     # except KeyError:
     #    pass  # Ignore KeyError silently
-    except UnicodeDecodeError:
-        pass  # Ignore UnicodeDecodeError silently
 
     converse.received(
         packet, interface, node_list, shortname, fromnum, channel, message
