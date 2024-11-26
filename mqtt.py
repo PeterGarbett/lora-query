@@ -46,7 +46,7 @@ def connect_and_subscribe(topic, message_handler) -> mqtt_client:
 
         client.on_connect = on_connect
         mqtt_broker = broker.broker()
-        print("Attempt to user broker", mqtt_broker)
+        print("Attempt to use broker", mqtt_broker)
         client.connect(mqtt_broker, port)
         subscribe(topic, message_handler, client)
         return client
