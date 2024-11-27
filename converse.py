@@ -26,10 +26,8 @@ def received(packet, interface, node_list, shortname, fromnum, channel, message)
         user = interface.getMyNodeInfo().get("user")
         ident = user.get("id")
         print("received on radio:", ident)
-        if -1 == channel:
-            channel_str = "Unknown channel"
-        else:
-            channel_str = str(channel)
+
+        channel_str = str(channel)
 
         in_mess = fromnum + ":" + channel_str + ":" + message
         mqtt.publish(in_mess, in_topic, mqtt_client)
