@@ -77,7 +77,8 @@ send_interface = None
 
 def on_mqtt_message(client, userdata, msg):
     """This gets called when a command has appeared which should be in the form
-    destination_id:channel:txt_message"""
+    destination_id:channel:txt_message.  It then sends out the message with those
+    parameters and publishes it """
     global mqtt_client
     global send_interface
     global out_topic
@@ -112,9 +113,6 @@ def crash(args):
         f"caught {args.exc_type} with value {args.exc_value} in thread {args.thread}\n"
     )
     comms_error = True
-
-
-# sys.exit()
 
 
 def end_loop(interface):
@@ -154,8 +152,11 @@ def end_loop(interface):
     threading.excepthook = crash
 
     try:
+        # Subscribe so we can receive commands to respond to by sending messages
+
         mqtt_client = mqtt.connect_and_subscribe(cmd_topic, on_mqtt_message)
         mqtt_client.loop_start()
+
         print("mqtt interface initialised")
 
         # Run whenever the interface is still running
@@ -176,13 +177,9 @@ def end_loop(interface):
                 alive = threading.active_count()
                 print("Alive with ", alive, " active threads:")
             active += 1
-
             time.sleep(60)
 
         print("Interface dropped or comms error, exiting")
-        mqtt_client.loop_stop()
-        interface.close()
-        sys.exit()
 
     except Exception as err:
         print("Exception in main control loop:", err)
