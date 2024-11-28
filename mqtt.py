@@ -64,9 +64,9 @@ def publish(msg, topic, client):
     # result: [0, 1]
     status = result[0]
     if status == 0:
-        print(f"Send `{msg}` to topic `{topic}`")
+        print(f"Sent `{msg}` to mqtt topic `{topic}`")
     else:
-        print(f"Failed to send message to topic {topic}")
+        print(f"Failed to send mqtt message to topic {topic}", status)
 
 
 def main():
@@ -76,9 +76,8 @@ def main():
         print(f"Received `{msg.payload.decode()}` from `{msg.topic}` topic")
 
     topic = "stat/tasmota_8CA606/RESULT"
-    client = connect_mqtt()
-    subscribe(topic, on_message, client)
-    ptopic = "/msh/eu_868"
+    client = connect_and_subscribe(topic, on_message)
+    ptopic = "msh/EU_868/"
     publish("hello::", ptopic, client)
     client.loop_forever()
 
