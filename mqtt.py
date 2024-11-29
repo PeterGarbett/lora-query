@@ -5,8 +5,6 @@ import random
 from paho.mqtt import client as mqtt_client
 import broker
 
-# Generate a Client ID with the subscribe prefix.
-client_id = f"subscribe-{random.randint(0, 100)}"
 
 # This is correct for my broker
 
@@ -29,7 +27,7 @@ def subscribe(topic, on_message, client: mqtt_client):
         sys.exit()
 
 
-def connect_and_subscribe(topic, message_handler) -> mqtt_client:
+def connect_and_subscribe(client_id,topic, message_handler) -> mqtt_client:
     """Version 2 paho mqtt connect and subscribe routine"""
 
     def on_connect(client, userdata, flags, reason_code, properties):
@@ -76,7 +74,8 @@ def main():
         print(f"Received `{msg.payload.decode()}` from `{msg.topic}` topic")
 
     topic = "stat/tasmota_8CA606/RESULT"
-    client = connect_and_subscribe(topic, on_message)
+    client_id = f"subscribe-{random.randint(0, 100)}"
+    client = connect_and_subscribe(client_id,topic, on_message)
     ptopic = "msh/EU_868/"
     publish("hello::", ptopic, client)
     client.loop_forever()

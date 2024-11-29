@@ -9,6 +9,7 @@ import queue
 import paho.mqtt.client as mqtt
 import broker
 import mqtt
+import random
 
 local_radio_id = None
 remote_radio_id = None
@@ -17,21 +18,26 @@ message = None
 channel = 1
 broker = broker.broker()
 
-QUEUE_CHECK_INTERVAL = 1    # Period in seconds to check for incoming messages
-RESEND_RATE = 30            # Resend request at this number of check intervals
+QUEUE_CHECK_INTERVAL = 1  # Period in seconds to check for incoming messages
+RESEND_RATE = (
+    60  # Resend request at this number of check intervals (greater than lora limit)
+)
 
 mqttc = None
 
 message_input = Queue()
 
+
 def on_mqtt_message(client, userdata, message):
     """This gets called back by mqtt, put the message on a queue
     to get it to the mainline code"""
     global message_input
-#    print("mqtt message:", (message.payload).decode())
+    #    print("mqtt message:", (message.payload).decode())
     message_input.put((message.payload).decode())
 
+
 usage = "usage: python3 lora_remote_status_request.py local_radio_id remote_radio_id"
+
 
 def valid_radio_id(dest, digits):
     """This is user input from the command line so can easily be in error
@@ -51,7 +57,7 @@ def valid_radio_id(dest, digits):
 
 
 def query():
-    """ Send off a status query at intervals until a reply appears """
+    """Send off a status query at intervals until a reply appears"""
     global message_input
     global mqttc
     global message
@@ -81,7 +87,10 @@ def query():
     cmd_topic = topic + "cmd"
     in_topic = topic + "received"
 
-    mqttc = mqtt.connect_and_subscribe(in_topic, on_mqtt_message)
+    client_id = "ID-" + local_radio_id + "-" + str(random.randint(0, 1000))
+    print("mqtt client ID:", client_id)
+
+    mqttc = mqtt.connect_and_subscribe("ID" + local_radio_id, in_topic, on_mqtt_message)
 
     mqttc.loop_start()
     once = False
@@ -92,7 +101,7 @@ def query():
     try:
         while True:
 
-            if 0 == prod % RESEND_RATE :
+            if 0 == prod % RESEND_RATE:
                 mqtt.publish(base_message + message, cmd_topic, mqttc)
             prod += 1
 

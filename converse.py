@@ -5,6 +5,7 @@ import sys
 import threading
 import mqtt
 import response
+import random 
 
 mqtt_client = None
 cmd_topic = None
@@ -152,7 +153,10 @@ def end_loop(interface):
     try:
         # Subscribe so we can receive commands to respond to by sending messages
 
-        mqtt_client = mqtt.connect_and_subscribe(cmd_topic, on_mqtt_message)
+        client_id = "ID-" + ident + "-" + str(random.randint(0, 1000))
+        print("mqtt client id:",client_id)
+
+        mqtt_client = mqtt.connect_and_subscribe(client_id,cmd_topic, on_mqtt_message)
         mqtt_client.loop_start()
 
         print("mqtt interface initialised")
