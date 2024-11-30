@@ -5,7 +5,7 @@ import sys
 import threading
 import mqtt
 import response
-import random 
+import random
 
 mqtt_client = None
 cmd_topic = None
@@ -71,13 +71,40 @@ def received(packet, interface, node_list, shortname, fromnum, channel, message)
             comms_error = True
 
 
+def decompose_message(target):
+    """Decompose message delimited by ":"'s into a tuple"""
+    decomp = target.split(":")
+
+    print(len(decomp))
+
+    if len(decomp) < 3:
+        return None
+
+    radio = decomp[0]
+    channel = decomp[1]
+
+    print(radio, channel)
+
+    #   This fiddly bit is so no-one gets a surprise when
+    #   including a ":" in a message
+
+    payloadList = decomp[2:]
+
+    payload = payloadList[0]
+    for x in payloadList[1:]:
+        payload += ":"
+        payload += x
+
+    return (radio, channel, payload)
+
+
 send_interface = None
 
 
 def on_mqtt_message(client, userdata, msg):
     """This gets called when a command has appeared which should be in the form
     destination_id:channel:txt_message.  It then sends out the message with those
-    parameters and publishes it """
+    parameters and publishes it"""
     global mqtt_client
     global send_interface
     global out_topic
@@ -87,10 +114,13 @@ def on_mqtt_message(client, userdata, msg):
 
     try:
         out = msg.payload.decode()
-        controlStr = out.split(":")
-        destId = controlStr[0]
-        channel = int(controlStr[1])
-        out = controlStr[2]
+        deco = decompose_message(out)
+        if None == deco:
+            print(err, "Error parsing mqtt input", out)
+            return
+        destId = deco[0]
+        channel = int(deco[1])
+        out = deco[2]
     except Exception as err:
         print(err, "Error parsing mqtt input", out)
         return
@@ -154,9 +184,9 @@ def end_loop(interface):
         # Subscribe so we can receive commands to respond to by sending messages
 
         client_id = "ID-" + ident + "-" + str(random.randint(0, 1000))
-        print("mqtt client id:",client_id)
+        print("mqtt client id:", client_id)
 
-        mqtt_client = mqtt.connect_and_subscribe(client_id,cmd_topic, on_mqtt_message)
+        mqtt_client = mqtt.connect_and_subscribe(client_id, cmd_topic, on_mqtt_message)
         mqtt_client.loop_start()
 
         print("mqtt interface initialised")
