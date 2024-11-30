@@ -56,6 +56,14 @@ def valid_radio_id(dest, digits):
         sys.exit()
 
 
+def form_command(radio, channel, message):
+    """Form a command"""
+    base_message = "!" + radio + ":" + str(channel) + ":"
+    command = base_message + message
+
+    return command
+
+
 def query():
     """Send off a status query at intervals until a reply appears"""
     global message_input
@@ -80,8 +88,7 @@ def query():
 
     print(f"Using local radio: {local_radio_id} remote radio: {remote_radio_id}")
 
-    base_message = "!" + remote_radio_id + ":" + str(channel) + ":"
-    message = base_message + "status request"
+    command = form_command(remote_radio_id, channel, "status request")
 
     topic = "msh/EU_868/" + local_radio_id + "/"
     cmd_topic = topic + "cmd"
@@ -95,14 +102,13 @@ def query():
     mqttc.loop_start()
     once = False
 
-    message = "status request"
     prod = 0
 
     try:
         while True:
 
             if 0 == prod % RESEND_RATE:
-                mqtt.publish(base_message + message, cmd_topic, mqttc)
+                mqtt.publish(command, cmd_topic, mqttc)
             prod += 1
 
             sys.stdout.flush()
