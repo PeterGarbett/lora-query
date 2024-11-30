@@ -75,7 +75,10 @@ def decompose_message(target):
     """Decompose message delimited by ":"'s into a tuple"""
     decomp = target.split(":")
 
-    print(len(decomp))
+    debug = False
+
+    if debug:
+        print("Decompose message of length",len(decomp))
 
     if len(decomp) < 3:
         return None
@@ -83,7 +86,8 @@ def decompose_message(target):
     radio = decomp[0]
     channel = decomp[1]
 
-    print(radio, channel)
+    if debug:
+        print("Radio:",radio,"Channel:", channel)
 
     #   This fiddly bit is so no-one gets a surprise when
     #   including a ":" in a message
