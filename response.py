@@ -5,6 +5,7 @@ because the status is very site specific """
 
 import public_ip
 import reset
+import small_timestamps
 
 COMMAND_CHANNEL = 1
 
@@ -21,8 +22,8 @@ def init_responses():
 
         import status
 
-        action = [status.statstring,reset.reset]
-        command = ["status request","reset"]
+        action = [status.statstring, reset.reset]
+        command = ["status request", "reset"]
     except:
 
         # Default to this.
@@ -33,28 +34,45 @@ def init_responses():
     return
 
 
-
 def form_command(radio, channel, message):
-    """Form a command"""
-    base_message = "!" + radio + ":" + str(channel) + ":"
+    """Form a command including a timestamp"""
+    base_message = (
+        "!"
+        + radio
+        + ":"
+        + str(channel)
+        + ":"
+        + str(small_timestamps.small_timestamp_mins())
+        + ":"
+    )
     command = base_message + message
 
     return command
 
 
-def response(fromnum,channel,message):
+def response(fromnum, channel, message):
     global action
-    global command 
+    global command
 
-    debug = False
+    debug = True
 
     if channel != COMMAND_CHANNEL:
-        return (False,"")
+        return (False, "")
 
     message.replace("\n", "")
 
     if debug:
-        print("Interpret:",message)
+        print("Interpret:", message)
+
+    try:
+        deco = message.split(":")
+        timestamp = deco[0]
+        message = deco[1]
+    except Exception as err:
+        print("Missing timestamp:", err)
+        return (False, "")
+
+    print("Timestamp:", timestamp)
 
     try:
         index = command.index(message)
@@ -62,19 +80,21 @@ def response(fromnum,channel,message):
     except Exception as err:
         if debug:
             print(err)
-        return (False,"")
+        return (False, "")
 
-    out = fromnum + ":" + str(channel) + ":" + up 
+    out = fromnum + ":" + str(channel) + ":" + up
 
-    return (True,out)
+    return (True, out)
 
 
 def main():
     init_responses()
-    rest_str = response("DEAD", COMMAND_CHANNEL,"status request")
+    rest_str = response("DEAD", COMMAND_CHANNEL, "status request")
     print(rest_str)
-    rest_str = response("FAFC", COMMAND_CHANNEL,"reset")
-    print(rest_str)
+
+
+#    rest_str = response("FAFC", COMMAND_CHANNEL,"reset")
+#    print(rest_str)
 
 
 if __name__ == "__main__":
