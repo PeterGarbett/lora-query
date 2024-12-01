@@ -10,6 +10,7 @@ import paho.mqtt.client as mqtt
 import broker
 import mqtt
 import random
+import response 
 
 local_radio_id = None
 remote_radio_id = None
@@ -56,13 +57,6 @@ def valid_radio_id(dest, digits):
         sys.exit()
 
 
-def form_command(radio, channel, message):
-    """Form a command"""
-    base_message = "!" + radio + ":" + str(channel) + ":"
-    command = base_message + message
-
-    return command
-
 
 def query():
     """Send off a status query at intervals until a reply appears"""
@@ -88,7 +82,7 @@ def query():
 
     print(f"Using local radio: {local_radio_id} remote radio: {remote_radio_id}")
 
-    command = form_command(remote_radio_id, channel, "status request")
+    command = response.form_command(remote_radio_id, channel, "status request")
 
     topic = "msh/EU_868/" + local_radio_id + "/"
     cmd_topic = topic + "cmd"

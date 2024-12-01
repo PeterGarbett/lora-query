@@ -6,6 +6,8 @@ because the status is very site specific """
 import public_ip
 import reset
 
+COMMAND_CHANNEL = 1
+
 action = []
 
 
@@ -31,7 +33,13 @@ def init_responses():
     return
 
 
-COMMAND_CHANNEL = 1
+
+def form_command(radio, channel, message):
+    """Form a command"""
+    base_message = "!" + radio + ":" + str(channel) + ":"
+    command = base_message + message
+
+    return command
 
 
 def response(fromnum,channel,message):
