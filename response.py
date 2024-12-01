@@ -4,24 +4,28 @@ in response to a request , and that dummied out for github
 because the status is very site specific """
 
 import public_ip
+import reset
 
-command = ["status request"]
 action = []
 
 
 def init_responses():
     global action
+    global command
+
     try:
 
-        # If software to define status isn't available
+        # If software to define status is available
 
         import status
 
-        action = [status.statstring]
+        action = [status.statstring,reset.reset]
+        command = ["status request","reset"]
     except:
 
         # Default to this.
 
+        command = ["status request"]
         action = [public_ip.public_ip]
 
     return
@@ -30,25 +34,38 @@ def init_responses():
 COMMAND_CHANNEL = 1
 
 
-def response(message, channel):
+def response(fromnum,channel,message):
     global action
+    global command 
+
+    debug = False
+
     if channel != COMMAND_CHANNEL:
-        return ""
+        return (False,"")
 
     message.replace("\n", "")
+
+    if debug:
+        print("Interpret:",message)
 
     try:
         index = command.index(message)
         up = action[index]()
-    except:
-        up = ""
+    except Exception as err:
+        if debug:
+            print(err)
+        return (False,"")
 
-    return up
+    out = fromnum + ":" + str(channel) + ":" + up 
+
+    return (True,out)
 
 
 def main():
     init_responses()
-    rest_str = response("status request", COMMAND_CHANNEL)
+    rest_str = response("DEAD", COMMAND_CHANNEL,"status request")
+    print(rest_str)
+    rest_str = response("FAFC", COMMAND_CHANNEL,"reset")
     print(rest_str)
 
 

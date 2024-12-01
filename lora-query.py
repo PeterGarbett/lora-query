@@ -107,7 +107,7 @@ def parse_packet(packet, interface, node_list):
     # except KeyError:
     #    pass  # Ignore KeyError silently
 
-    converse.received(
+    converse.received_from_lora(
         packet, interface, node_list, shortname, fromnum, channel, message
     )
 

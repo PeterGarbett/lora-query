@@ -17,11 +17,13 @@ CMD_CHANNEL = 1
 comms_error = False
 
 
-def received(packet, interface, node_list, shortname, fromnum, channel, message):
+def received_from_lora(packet, interface, node_list, shortname, fromnum, channel, message):
     global mqtt_client
     global in_topic
     global out_topic
     global comms_error
+
+    debug = False
 
     try:
         user = interface.getMyNodeInfo().get("user")
@@ -56,22 +58,22 @@ def received(packet, interface, node_list, shortname, fromnum, channel, message)
 
     # Map from commands to responses
 
-    up = response.response(message, channel)
+    out = response.response(fromnum,channel,message)
 
     # Send answer back to where the query came from
 
-    if up:
-        out = fromnum + ":" + channel_str + ":" + up + ""
-        mqtt.publish(out, out_topic, mqtt_client)
+    if out[0]:
         try:
-            result = interface.sendText(out, destinationId=fromnum, channelIndex=1)
+            mqtt.publish(out[1], out_topic, mqtt_client)
+            result = interface.sendText(out[1], destinationId=fromnum, channelIndex=channel)
+            if debug:
+                print("sendtext return code", result)
         except Exception as err:  # Want to catch timeout
-            print("sendtext return code", result)
             print(err)
             comms_error = True
 
 
-def decompose_message(target):
+def decompose_mqtt_message(target):
     """Decompose message delimited by ":"'s into a tuple"""
     decomp = target.split(":")
 
@@ -118,7 +120,7 @@ def on_mqtt_message(client, userdata, msg):
 
     try:
         out = msg.payload.decode()
-        deco = decompose_message(out)
+        deco = decompose_mqtt_message(out)
         if None == deco:
             print(err, "Error parsing mqtt input", out)
             return
