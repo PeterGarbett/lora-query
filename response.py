@@ -37,8 +37,7 @@ def init_responses():
 def form_command(radio, channel, message):
     """Form a command including a timestamp"""
     base_message = (
-        "!"
-        + radio
+        radio
         + ":"
         + str(channel)
         + ":"
@@ -54,7 +53,7 @@ def response(fromnum, channel, message):
     global action
     global command
 
-    debug = True
+    debug = False
 
     if channel != COMMAND_CHANNEL:
         return (False, "")
@@ -66,13 +65,21 @@ def response(fromnum, channel, message):
 
     try:
         deco = message.split(":")
-        timestamp = deco[0]
+        timestamp = float(deco[0])
         message = deco[1]
     except Exception as err:
         print("Missing timestamp:", err)
         return (False, "")
 
-    print("Timestamp:", timestamp)
+    now = small_timestamps.small_timestamp_mins()
+    delay = small_timestamps.time_difference_in_minutes(timestamp, now)
+
+    print("Message started off ", delay, " minutes ago")
+
+    if 20.0 < delay:
+        print("Reject stale message")
+        return (False,"")
+
 
     try:
         index = command.index(message)
@@ -82,14 +89,18 @@ def response(fromnum, channel, message):
             print(err)
         return (False, "")
 
-    out = fromnum + ":" + str(channel) + ":" + up
+    out = form_command(fromnum, channel, up)
+
+    if debug:
+        print("response:",out)
 
     return (True, out)
 
 
 def main():
     init_responses()
-    rest_str = response("DEAD", COMMAND_CHANNEL, "status request")
+    now = small_timestamps.small_timestamp_mins()
+    rest_str = response("DEAD", COMMAND_CHANNEL, str(now) + ":status request")
     print(rest_str)
 
 

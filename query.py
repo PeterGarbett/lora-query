@@ -82,7 +82,7 @@ def query():
 
     print(f"Using local radio: {local_radio_id} remote radio: {remote_radio_id}")
 
-    command = response.form_command(remote_radio_id, channel, "status request")
+    command = response.form_command("!"+remote_radio_id, channel, "status request")
 
     topic = "msh/EU_868/" + local_radio_id + "/"
     cmd_topic = topic + "cmd"
