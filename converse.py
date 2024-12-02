@@ -98,7 +98,8 @@ def received_from_lora(
     if out[0]:
         try:
             resp = add_timestamp(out[1])
-            reply = fromnum + ":" + str(CMD_CHANNEL) + ":" + resp
+            #reply = fromnum + ":" + str(CMD_CHANNEL) + ":" + resp
+            reply = add_timestamp(fromnum + ":" + str(CMD_CHANNEL) + ":" + out[1])
             print("Transmit resp=", reply)
 
             mqtt.publish(resp, out_topic, mqtt_client)
