@@ -34,27 +34,6 @@ def init_responses():
     return
 
 
-def form_command(radio, channel, message):
-    """Form a command including a timestamp"""
-
-    debug = True
-
-    base_message = (
-        radio
-        + ":"
-        + str(channel)
-        + ":"
-        + str(small_timestamps.small_timestamp_mins())
-        + ":"
-    )
-    command = base_message + message
-
-    if debug:
-        print("form message from", base_message, " combined with ", message)
-
-    return command
-
-
 def response(fromnum, channel, message):
     global action
     global command
@@ -68,23 +47,6 @@ def response(fromnum, channel, message):
 
     if debug:
         print("Interpret:", message)
-
-    try:
-        deco = message.split(":")
-        timestamp = float(deco[0])
-        message = deco[1]
-    except Exception as err:
-        print("Missing timestamp:", err)
-        return (False, "")
-
-    now = small_timestamps.small_timestamp_mins()
-    delay = small_timestamps.time_difference_in_minutes(timestamp, now)
-
-    print("Message started off ", delay, " minutes ago")
-
-    if 20.0 < delay:
-        print("Reject stale message")
-        return (False, "")
 
     try:
         index = command.index(message)

@@ -18,6 +18,21 @@ CMD_CHANNEL = 1
 comms_error = False
 
 
+def add_timestamp(message):
+    """Add leading timestamp"""
+
+    timestamp_appended = str(small_timestamps.small_timestamp_mins()) + ":" + message
+
+    return timestamp_appended
+
+
+def remove_timestamps(times_and_message):
+
+    decomposed = times_and_message.split(":")
+
+    return decomposed[-1]
+
+
 def received_from_lora(
     packet, interface, node_list, shortname, fromnum, channel, message
 ):
@@ -26,7 +41,7 @@ def received_from_lora(
     global out_topic
     global comms_error
 
-    debug = True
+    debug = False
 
     try:
         user = interface.getMyNodeInfo().get("user")
@@ -34,8 +49,7 @@ def received_from_lora(
         print("received on radio:", ident)
 
         channel_str = str(channel)
-        now = small_timestamps.small_timestamp_mins()
-        in_mess = fromnum + ":" + channel_str + ":" + str(now) + ":" + message
+        in_mess = fromnum + ":" + channel_str + ":" + add_timestamp(message)
         mqtt.publish(in_mess, in_topic, mqtt_client)
     except Exception as err:
         print("converse.received error", err)
@@ -61,17 +75,35 @@ def received_from_lora(
 
     # Map from commands to responses
 
-    out = response.response(fromnum, channel, message)
+    try:
+        deco = message.split(":")
+        timestamp = float(deco[0])
+        now = small_timestamps.small_timestamp_mins()
+        delay = small_timestamps.time_difference_in_minutes(timestamp, now)
+        print("Message started off ", delay, " minutes ago")
+
+        if 20.0 < delay:
+            print("Reject stale message")
+            return
+
+    except Exception as err:
+        print("Missing timestamp:", err, "in message:", message)
+
+    noTime = remove_timestamps(message)
+    out = response.response(fromnum, channel, noTime)
 
     # Send answer back to where the query came from
     # Wrap it up in timestamp format ....
 
     if out[0]:
         try:
-            resp = response.form_command(fromnum, channel, out[1])
+            resp = add_timestamp(out[1])
+            reply = fromnum + ":" + str(CMD_CHANNEL) + ":" + resp
+            print("Transmit resp=", reply)
+
             mqtt.publish(resp, out_topic, mqtt_client)
             result = interface.sendText(
-                resp, destinationId=fromnum, channelIndex=channel
+                reply, destinationId=fromnum, channelIndex=channel
             )
             if debug:
                 print("sendtext return code", result)
