@@ -36,6 +36,9 @@ def init_responses():
 
 def form_command(radio, channel, message):
     """Form a command including a timestamp"""
+
+    debug = True
+
     base_message = (
         radio
         + ":"
@@ -45,6 +48,9 @@ def form_command(radio, channel, message):
         + ":"
     )
     command = base_message + message
+
+    if debug:
+        print("form message from", base_message, " combined with ", message)
 
     return command
 
@@ -78,8 +84,7 @@ def response(fromnum, channel, message):
 
     if 20.0 < delay:
         print("Reject stale message")
-        return (False,"")
-
+        return (False, "")
 
     try:
         index = command.index(message)
@@ -90,7 +95,7 @@ def response(fromnum, channel, message):
         return (False, "")
 
     if debug:
-        print("response:",up)
+        print("response:", up)
 
     return (True, up)
 

@@ -6,6 +6,7 @@ import threading
 import mqtt
 import response
 import random
+import small_timestamps
 
 mqtt_client = None
 cmd_topic = None
@@ -17,13 +18,15 @@ CMD_CHANNEL = 1
 comms_error = False
 
 
-def received_from_lora(packet, interface, node_list, shortname, fromnum, channel, message):
+def received_from_lora(
+    packet, interface, node_list, shortname, fromnum, channel, message
+):
     global mqtt_client
     global in_topic
     global out_topic
     global comms_error
 
-    debug = False
+    debug = True
 
     try:
         user = interface.getMyNodeInfo().get("user")
@@ -31,8 +34,8 @@ def received_from_lora(packet, interface, node_list, shortname, fromnum, channel
         print("received on radio:", ident)
 
         channel_str = str(channel)
-
-        in_mess = fromnum + ":" + channel_str + ":" + message
+        now = small_timestamps.small_timestamp_mins()
+        in_mess = fromnum + ":" + channel_str + ":" + str(now) + ":" + message
         mqtt.publish(in_mess, in_topic, mqtt_client)
     except Exception as err:
         print("converse.received error", err)
@@ -58,7 +61,7 @@ def received_from_lora(packet, interface, node_list, shortname, fromnum, channel
 
     # Map from commands to responses
 
-    out = response.response(fromnum,channel,message)
+    out = response.response(fromnum, channel, message)
 
     # Send answer back to where the query came from
     # Wrap it up in timestamp format ....
@@ -67,7 +70,9 @@ def received_from_lora(packet, interface, node_list, shortname, fromnum, channel
         try:
             resp = response.form_command(fromnum, channel, out[1])
             mqtt.publish(resp, out_topic, mqtt_client)
-            result = interface.sendText(resp, destinationId=fromnum, channelIndex=channel)
+            result = interface.sendText(
+                resp, destinationId=fromnum, channelIndex=channel
+            )
             if debug:
                 print("sendtext return code", result)
         except Exception as err:  # Want to catch timeout
@@ -82,7 +87,7 @@ def decompose_mqtt_message(target):
     debug = False
 
     if debug:
-        print("Decompose message of length",len(decomp))
+        print("Decompose message of length", len(decomp))
 
     if len(decomp) < 3:
         return None
@@ -91,7 +96,7 @@ def decompose_mqtt_message(target):
     channel = decomp[1]
 
     if debug:
-        print("Radio:",radio,"Channel:", channel)
+        print("Radio:", radio, "Channel:", channel)
 
     #   This fiddly bit is so no-one gets a surprise when
     #   including a ":" in a message
