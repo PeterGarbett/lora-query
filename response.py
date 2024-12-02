@@ -89,12 +89,10 @@ def response(fromnum, channel, message):
             print(err)
         return (False, "")
 
-    out = form_command(fromnum, channel, up)
-
     if debug:
-        print("response:",out)
+        print("response:",up)
 
-    return (True, out)
+    return (True, up)
 
 
 def main():
