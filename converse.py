@@ -61,11 +61,13 @@ def received_from_lora(packet, interface, node_list, shortname, fromnum, channel
     out = response.response(fromnum,channel,message)
 
     # Send answer back to where the query came from
+    # Wrap it up in timestamp format ....
 
     if out[0]:
         try:
-            mqtt.publish(out[1], out_topic, mqtt_client)
-            result = interface.sendText(out[1], destinationId=fromnum, channelIndex=channel)
+            resp = response.form_command(fromnum, channel, out[1])
+            mqtt.publish(resp, out_topic, mqtt_client)
+            result = interface.sendText(resp, destinationId=fromnum, channelIndex=channel)
             if debug:
                 print("sendtext return code", result)
         except Exception as err:  # Want to catch timeout
