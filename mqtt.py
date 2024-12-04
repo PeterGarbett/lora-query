@@ -17,7 +17,12 @@ debug = False
 
 def subscribe(topic, on_message, client: mqtt_client):
     """Subscribe to mqtt"""
-    print("subscribe to ", topic)
+
+    debug = False
+
+    if debug:
+        print("subscribe to ", topic)
+
     try:
         client.subscribe(topic)
         client.on_message = on_message
@@ -36,6 +41,8 @@ def connect_and_subscribe(client_id,topic, message_handler) -> mqtt_client:
                 f"Failed to connect: {reason_code}. loop_forever() will retry connection"
             )
 
+    debug = False
+
     try:
         client = mqtt_client.Client(mqtt_client.CallbackAPIVersion.VERSION2, client_id)
 
@@ -44,7 +51,8 @@ def connect_and_subscribe(client_id,topic, message_handler) -> mqtt_client:
 
         client.on_connect = on_connect
         mqtt_broker = broker.broker()
-        print("Attempt to use broker", mqtt_broker)
+        if debug:
+            print("Attempt to use broker", mqtt_broker)
         client.connect(mqtt_broker, port)
         subscribe(topic, message_handler, client)
         return client
@@ -62,7 +70,8 @@ def publish(msg, topic, client):
     # result: [0, 1]
     status = result[0]
     if status == 0:
-        print(f"Sent `{msg}` to mqtt topic `{topic}`")
+        if debug:
+            print(f"Sent `{msg}` to mqtt topic `{topic}`")
     else:
         print(f"Failed to send mqtt message to topic {topic} failure code:{status}")
 

@@ -60,7 +60,7 @@ def valid_radio_id(dest, digits):
 def form_command(radio, channel, message):
     """Form a command including a timestamp"""
 
-    debug = True
+    debug = False
 
     base_message = (
         radio
@@ -87,6 +87,8 @@ def query():
     global local_radio_id
     global remote_radio_id
 
+    debug = False
+
     inputargs = sys.argv
     sys.argv.pop(0)
 
@@ -109,7 +111,9 @@ def query():
     in_topic = topic + "received"
 
     client_id = "ID-" + local_radio_id + "-" + str(random.randint(0, 1000))
-    print("mqtt client ID:", client_id)
+
+    if debug:
+        print("mqtt client ID:", client_id)
 
     mqttc = mqtt.connect_and_subscribe("ID" + local_radio_id, in_topic, on_mqtt_message)
 
