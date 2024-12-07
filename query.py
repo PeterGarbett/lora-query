@@ -20,6 +20,7 @@ channel = 1
 broker = broker.broker()
 
 QUEUE_CHECK_INTERVAL = 1  # Period in seconds to check for incoming messages
+ATTEMPT_LIMIT = 10  # Request status this many times before giving up
 RESEND_RATE = (
     60  # Resend request at this number of check intervals (greater than lora limit)
 )
@@ -120,12 +121,19 @@ def query():
     mqttc.loop_start()
 
     prod = 0
+    attempts = 0
 
     try:
         while True:
 
             if 0 == prod % RESEND_RATE:
+                # Command the radio via mqtt. Hope it is listening
                 mqtt.publish(command, cmd_topic, mqttc)
+                print(".", end="")
+                attempts += 1
+                if ATTEMPT_LIMIT <= attempts:
+                    print("\nNo luck, giving up")
+                    break
             prod += 1
 
             sys.stdout.flush()
@@ -136,7 +144,7 @@ def query():
                     if debug:
                         print("Received>", input_message, "<")
                     decomp = input_message.split(":")
-                    print("Status:", decomp[-1])
+                    print("\nStatus:", decomp[-1])
                     break
 
                 time.sleep(QUEUE_CHECK_INTERVAL)
