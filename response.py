@@ -42,7 +42,7 @@ def response(fromnum, channel, message):
     global action
     global command
 
-    debug = True
+    debug = False
 
     if channel != COMMAND_CHANNEL:
         return (False, "")
@@ -56,6 +56,9 @@ def response(fromnum, channel, message):
 
     try:
         decomposed = message.split(" ")
+
+        # Commands and node names must not match.  A reply triggers a silent exception
+
         index = command.index(decomposed[0])
         if len(decomposed) == 1:
             up = action[index]("")
