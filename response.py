@@ -13,6 +13,9 @@ action = []
 
 
 def init_responses():
+    """Setup commands and corresponding responses. Much of this is site
+    specific so provide a placeholder if not available"""
+
     global action
     global command
 
@@ -23,7 +26,7 @@ def init_responses():
         import status
 
         action = [status.statstring, reset.reset]
-        command = ["status request", "reset"]
+        command = ["status", "reset"]
     except:
 
         # Default to this.
@@ -35,10 +38,11 @@ def init_responses():
 
 
 def response(fromnum, channel, message):
+    """Look up command and action it"""
     global action
     global command
 
-    debug = False
+    debug = True
 
     if channel != COMMAND_CHANNEL:
         return (False, "")
@@ -48,9 +52,16 @@ def response(fromnum, channel, message):
     if debug:
         print("Interpret:", message)
 
+    """ message is assummed to be in two parts, separate out and pass on the 2nd as an argument """
+
     try:
-        index = command.index(message)
-        up = action[index]()
+        decomposed = message.split(" ")
+        index = command.index(decomposed[0])
+        if len(decomposed) == 1:
+            up = action[index]("")
+        else:
+            up = action[index](decomposed[-1])
+
     except Exception as err:
         if debug:
             print(err)
@@ -64,13 +75,12 @@ def response(fromnum, channel, message):
 
 def main():
     init_responses()
-    now = small_timestamps.small_timestamp_mins()
-    rest_str = response("DEAD", COMMAND_CHANNEL, str(now) + ":status request")
-    print(rest_str)
-
-
-#    rest_str = response("FAFC", COMMAND_CHANNEL,"reset")
-#    print(rest_str)
+    rest_str = "status request"
+    response("FAFC", COMMAND_CHANNEL, rest_str)
+    rest_str = "reset edge"
+    response("FAFC", COMMAND_CHANNEL, rest_str)
+    rest_str = "reset"
+    response("FAFC", COMMAND_CHANNEL, rest_str)
 
 
 if __name__ == "__main__":
