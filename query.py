@@ -142,9 +142,17 @@ def query():
                 input_message = message_input.get_nowait()
                 if local_radio_id in input_message and remote_radio_id in input_message:
                     if debug:
-                        print("Received>", input_message, "<")
+                        print("Received:", input_message)
+                    input_message = input_message[2:]
                     decomp = input_message.split(":")
-                    print("\nStatus:", decomp[-1])
+                    print("\n") 
+                    try:
+                        import status
+                        output = status.parse_statstring(decomp[-1])
+                        status.pretty_print(output)
+                    except:
+                        print(statstring)
+
                     break
 
                 time.sleep(QUEUE_CHECK_INTERVAL)

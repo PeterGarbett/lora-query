@@ -85,7 +85,6 @@ def response(fromnum, channel, message):
 
     return (True, up)
 
-
 def main():
     init_responses()
     rest_str = "status request"
@@ -94,7 +93,6 @@ def main():
     response("FAFC", COMMAND_CHANNEL, rest_str)
     rest_str = "reset"
     response("FAFC", COMMAND_CHANNEL, rest_str)
-
 
 if __name__ == "__main__":
     main()
