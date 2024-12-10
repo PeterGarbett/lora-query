@@ -44,13 +44,19 @@ def response(fromnum, channel, message):
 
     debug = False
 
-    if channel != COMMAND_CHANNEL:
+    if channel != COMMAND_CHANNEL or len(message) == 0:
         return (False, "")
 
     message.replace("\n", "")
 
     if debug:
         print("Interpret:", message)
+
+    # Is this message marked as a response ? ignore it
+
+    if message[0] == ">":
+        print("Message is a response to us, no reply needed")
+        return (False, "")
 
     """ message is assummed to be in two parts, separate out and pass on the 2nd as an argument """
 
@@ -64,6 +70,10 @@ def response(fromnum, channel, message):
             up = action[index]("")
         else:
             up = action[index](decomposed[-1])
+
+        # Precede responses with a > to distinguish them from requests
+
+        up = ">" + up  #   identify as a response
 
     except Exception as err:
         if debug:
