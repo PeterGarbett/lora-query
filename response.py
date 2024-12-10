@@ -4,7 +4,6 @@ in response to a request , and that dummied out for github
 because the status is very site specific """
 
 import public_ip
-import reset
 import small_timestamps
 
 COMMAND_CHANNEL = 1
@@ -21,9 +20,10 @@ def init_responses():
 
     try:
 
-        # If software to define status is available
+        # If software to define status and perform reset is available
 
         import status
+        import reset
 
         action = [status.statstring, reset.reset]
         command = ["status", "reset"]
