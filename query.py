@@ -145,13 +145,14 @@ def query():
                         print("Received:", input_message)
                     input_message = input_message[2:]
                     decomp = input_message.split(":")
-                    print("\n") 
+                    print("\n")
                     try:
                         import status
+
                         output = status.parse_statstring(decomp[-1])
                         status.pretty_print(output)
                     except:
-                        print(statstring)
+                        print("Remote status:", decomp[-1])
 
                     break
 
