@@ -11,6 +11,11 @@ COMMAND_CHANNEL = 1
 action = []
 
 
+def ip(dummy):
+    ''' Responses get called with an argument we need to ditch '''
+    return public_ip.public_ip()
+
+
 def init_responses():
     """Setup commands and corresponding responses. Much of this is site
     specific so provide a placeholder if not available"""
@@ -25,14 +30,14 @@ def init_responses():
         import status
         import reset
 
-        action = [status.statstring, reset.reset]
         command = ["status", "reset"]
+        action = [status.statstring, reset.reset]
     except:
 
         # Default to this.
 
-        command = ["status request"]
-        action = [public_ip.public_ip]
+        command = ["status"]
+        action = [ip]
 
     return
 
@@ -85,6 +90,7 @@ def response(fromnum, channel, message):
 
     return (True, up)
 
+
 def main():
     init_responses()
     rest_str = "status request"
@@ -93,6 +99,7 @@ def main():
     response("FAFC", COMMAND_CHANNEL, rest_str)
     rest_str = "reset"
     response("FAFC", COMMAND_CHANNEL, rest_str)
+
 
 if __name__ == "__main__":
     main()
