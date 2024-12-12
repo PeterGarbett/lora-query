@@ -151,7 +151,9 @@ def query():
 
                         output = status.parse_statstring(decomp[-1])
                         status.pretty_print(output)
-                    except:
+                    except Exception as err:
+                        if debug:
+                            print(err)
                         print("Remote status:", decomp[-1])
 
                     break
