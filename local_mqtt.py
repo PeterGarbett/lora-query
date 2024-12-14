@@ -71,7 +71,7 @@ def publish(msg, topic, client):
     status = result[0]
     if status == 0:
         if debug:
-            print(f"Sent `{msg}` to mqtt topic `{topic}`")
+           print(f"Sent `{msg}` to mqtt topic `{topic}`")
     else:
         print(f"Failed to send mqtt message to topic {topic} failure code:{status}")
 

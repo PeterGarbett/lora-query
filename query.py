@@ -8,10 +8,10 @@ from multiprocessing import Queue
 import queue
 import paho.mqtt.client as mqtt
 import broker
-import mqtt
 import random
 import small_timestamps
 import mqtt_topic
+import local_mqtt
 
 local_radio_id = None
 remote_radio_id = None
@@ -79,6 +79,8 @@ def form_command(radio, channel, message):
 
     return command
 
+def confirm_sent(client, userdata, msg):
+        print(f"Received `{msg.payload.decode()}` from `{msg.topic}` topic")
 
 def query():
     """Send off a status query at intervals until a reply appears"""
@@ -111,13 +113,15 @@ def query():
     topic = mqtt_topic.BASE + local_radio_id + "/"
     cmd_topic = topic + "cmd"
     in_topic = topic + "received"
+    out_topic = topic + "sent"
 
     client_id = "ID-" + local_radio_id + "-" + str(random.randint(0, 1000))
 
     if debug:
         print("mqtt client ID:", client_id)
 
-    mqttc = mqtt.connect_and_subscribe("ID" + local_radio_id, in_topic, on_mqtt_message)
+    mqttc = local_mqtt.connect_and_subscribe("ID" + local_radio_id, in_topic, on_mqtt_message)
+    #local_mqtt.subscribe(out_topic, confirm_sent, client_id)
 
     mqttc.loop_start()
 
@@ -129,7 +133,7 @@ def query():
 
             if 0 == prod % RESEND_RATE:
                 # Command the radio via mqtt. Hope it is listening
-                mqtt.publish(command, cmd_topic, mqttc)
+                local_mqtt.publish(command, cmd_topic, mqttc)
                 print(".", end="")
                 attempts += 1
                 if ATTEMPT_LIMIT <= attempts:

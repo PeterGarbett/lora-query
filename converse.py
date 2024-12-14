@@ -3,10 +3,10 @@
 import time
 import sys
 import threading
-import mqtt
 import response
 import random
 import small_timestamps
+import local_mqtt
 import mqtt_topic
 
 
@@ -52,7 +52,7 @@ def received_from_lora(
 
         channel_str = str(channel)
         in_mess = fromnum + ":" + channel_str + ":" + add_timestamp(message)
-        mqtt.publish(in_mess, in_topic, mqtt_client)
+        local_mqtt.publish(in_mess, in_topic, mqtt_client)
     except Exception as err:
         print("converse.received error", err)
         comms_error = True
@@ -104,7 +104,7 @@ def received_from_lora(
             reply = add_timestamp(fromnum + ":" + str(CMD_CHANNEL) + ":" + out[1])
             print("Transmit resp=", reply)
 
-            mqtt.publish(resp, out_topic, mqtt_client)
+            local_mqtt.publish(resp, out_topic, mqtt_client)
             result = interface.sendText(
                 reply, destinationId=fromnum, channelIndex=channel
             )
@@ -174,7 +174,7 @@ def on_mqtt_message(client, userdata, msg):
         return
 
     try:
-        mqtt.publish(out, out_topic, mqtt_client)
+        local_mqtt.publish(out, out_topic, mqtt_client)
         print("Transmit message:", out, "destID:", destId, "channel", channel)
         send_interface.sendText(out, destinationId=destId, channelIndex=channel)
     except Exception as err:
@@ -235,7 +235,7 @@ def end_loop(interface):
         client_id = "ID-" + ident + "-" + str(random.randint(0, 1000))
         print("mqtt client id:", client_id)
 
-        mqtt_client = mqtt.connect_and_subscribe(client_id, cmd_topic, on_mqtt_message)
+        mqtt_client = local_mqtt.connect_and_subscribe(client_id, cmd_topic, on_mqtt_message)
         mqtt_client.loop_start()
 
         print("mqtt interface initialised")
