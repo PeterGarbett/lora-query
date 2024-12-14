@@ -85,7 +85,7 @@ def main():
     topic = "stat/tasmota_8CA606/RESULT"
     client_id = f"subscribe-{random.randint(0, 100)}"
     client = connect_and_subscribe(client_id,topic, on_message)
-    ptopic = "msh/EU_868/"
+    ptopic = "msh_test"
     publish("hello::", ptopic, client)
     client.loop_forever()
 

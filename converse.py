@@ -7,6 +7,8 @@ import mqtt
 import response
 import random
 import small_timestamps
+import mqtt_topic
+
 
 mqtt_client = None
 cmd_topic = None
@@ -98,7 +100,7 @@ def received_from_lora(
     if out[0]:
         try:
             resp = add_timestamp(out[1])
-            #reply = fromnum + ":" + str(CMD_CHANNEL) + ":" + resp
+            # reply = fromnum + ":" + str(CMD_CHANNEL) + ":" + resp
             reply = add_timestamp(fromnum + ":" + str(CMD_CHANNEL) + ":" + out[1])
             print("Transmit resp=", reply)
 
@@ -214,9 +216,10 @@ def end_loop(interface):
 
     ident = ident[1:]  # remove ! from topic
 
-    cmd_topic = "msh/EU_868/" + ident + "/" + "cmd"
-    in_topic = "msh/EU_868/" + ident + "/" + "received"
-    out_topic = "msh/EU_868/" + ident + "/" + "sent"
+    BASE = mqtt_topic.BASE
+    cmd_topic = BASE + ident + "/" + "cmd"
+    in_topic = BASE + ident + "/" + "received"
+    out_topic = BASE + ident + "/" + "sent"
 
     # Setup command responses.
 

@@ -11,6 +11,7 @@ import broker
 import mqtt
 import random
 import small_timestamps
+import mqtt_topic
 
 local_radio_id = None
 remote_radio_id = None
@@ -107,7 +108,7 @@ def query():
 
     command = form_command("!" + remote_radio_id, channel, "status request")
 
-    topic = "msh/EU_868/" + local_radio_id + "/"
+    topic = mqtt_topic.BASE + local_radio_id + "/"
     cmd_topic = topic + "cmd"
     in_topic = topic + "received"
 

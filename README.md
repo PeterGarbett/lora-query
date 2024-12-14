@@ -34,6 +34,7 @@ lora.py         # Setup the interface to the meshtastic radio
 query.py        # Drive radio via mqqt, keep asking until we get a response
 lora.service    # Run the status handling as a service; restart on errors
 mqtt.py         # Local mqtt connect, publish, subscribe
+mqtt_topic.py   # Define the base topic for local mqtt
 README.md       # This document
 response.py     # Definition of the commands and responses.
 setup-virt      # setup python virtual environment
