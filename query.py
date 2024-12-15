@@ -138,7 +138,7 @@ def query():
     command = form_command("!" + remote_radio_id, channel, "status request")
 
     topic = mqtt_topic.BASE + local_radio_id + "/"
-    cmd_topic = topic + "cmd"
+    cmd_topic = topic + mqtt_topic.CMD
     radio_activity_topic = topic + "#"
 
     client_id = "ID-" + local_radio_id + "-" + str(random.randint(0, 1000))

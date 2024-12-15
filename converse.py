@@ -217,9 +217,9 @@ def end_loop(interface):
     ident = ident[1:]  # remove ! from topic
 
     BASE = mqtt_topic.BASE
-    cmd_topic = BASE + ident + "/" + "cmd"
-    in_topic = BASE + ident + "/" + "received"
-    out_topic = BASE + ident + "/" + "sent"
+    cmd_topic = BASE + ident + "/" + mqtt_topic.CMD
+    in_topic = BASE + ident + "/" + mqtt_topic.REC
+    out_topic = BASE + ident + "/" + mqtt_topic.SENT
 
     # Setup command responses.
 
@@ -235,7 +235,9 @@ def end_loop(interface):
         client_id = "ID-" + ident + "-" + str(random.randint(0, 1000))
         print("mqtt client id:", client_id)
 
-        mqtt_client = local_mqtt.connect_and_subscribe(client_id, cmd_topic, on_mqtt_message)
+        mqtt_client = local_mqtt.connect_and_subscribe(
+            client_id, cmd_topic, on_mqtt_message
+        )
         mqtt_client.loop_start()
 
         print("mqtt interface initialised")
