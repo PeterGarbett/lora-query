@@ -104,10 +104,10 @@ def received_from_lora(
             reply = add_timestamp(fromnum + ":" + str(CMD_CHANNEL) + ":" + out[1])
             print("Transmit resp=", reply)
 
-            local_mqtt.publish(resp, out_topic, mqtt_client)
             result = interface.sendText(
                 reply, destinationId=fromnum, channelIndex=channel
             )
+            local_mqtt.publish(resp, out_topic, mqtt_client)
             if debug:
                 print("sendtext return code", result)
         except Exception as err:  # Want to catch timeout
