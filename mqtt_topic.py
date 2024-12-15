@@ -1,3 +1,6 @@
-""" Define this in only one place """
+""" Define these in only one place """
 
-BASE = "msh/EU_868/"
+BASE = "lora-msh/"
+CMD = "cmd"
+SENT = "sent"
+REC = "received"
