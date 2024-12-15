@@ -12,6 +12,7 @@ import random
 import small_timestamps
 import mqtt_topic
 import local_mqtt
+import mqtt_topic
 
 local_radio_id = None
 remote_radio_id = None
@@ -25,7 +26,9 @@ ATTEMPT_LIMIT = 10  # Request status this many times before giving up
 RESEND_RATE = (
     60  # Resend request at this number of check intervals (greater than lora limit)
 )
+LOCAL_RADIO_CHECK = 2
 
+radio_is_alive = False
 mqttc = None
 
 message_input = Queue()
@@ -35,8 +38,33 @@ def on_mqtt_message(client, userdata, message):
     """This gets called back by mqtt, put the message on a queue
     to get it to the mainline code"""
     global message_input
-    #    print("mqtt message:", (message.payload).decode())
-    message_input.put((message.payload).decode())
+
+    debug = False
+
+    if debug:
+        print("mqtt message:", (message.payload).decode())
+
+    topic = message.topic
+
+    if mqtt_topic.SENT in topic:
+        if debug:
+            print("mqtt says radio xmit")
+        radio_is_alive = True
+        return
+
+    if mqtt_topic.CMD in topic:
+        if debug:
+            print("mqtt command sent")
+        return
+
+    if mqtt_topic.REC in topic:
+        try:
+            payload = (message.payload).decode()
+            message_input.put(payload)
+        except Exception as err:
+            print(err)  # decoding error probably
+
+        # Ignore anything not in these catagories
 
 
 usage = "usage: python3 lora_remote_status_request.py local_radio_id remote_radio_id"
@@ -79,8 +107,6 @@ def form_command(radio, channel, message):
 
     return command
 
-def confirm_sent(client, userdata, msg):
-        print(f"Received `{msg.payload.decode()}` from `{msg.topic}` topic")
 
 def query():
     """Send off a status query at intervals until a reply appears"""
@@ -90,6 +116,7 @@ def query():
     global topic
     global local_radio_id
     global remote_radio_id
+    global radio_is_alive
 
     debug = False
 
@@ -112,16 +139,19 @@ def query():
 
     topic = mqtt_topic.BASE + local_radio_id + "/"
     cmd_topic = topic + "cmd"
-    in_topic = topic + "received"
-    out_topic = topic + "sent"
+    radio_activity_topic = topic + "#"
 
     client_id = "ID-" + local_radio_id + "-" + str(random.randint(0, 1000))
 
     if debug:
         print("mqtt client ID:", client_id)
 
-    mqttc = local_mqtt.connect_and_subscribe(client_id, in_topic, on_mqtt_message)
-    #local_mqtt.subscribe(out_topic, confirm_sent, client_id)
+    try:
+        mqttc = local_mqtt.connect_and_subscribe(
+            client_id, radio_activity_topic, on_mqtt_message
+        )
+    except Exception as err:
+        print(err)
 
     mqttc.loop_start()
 
@@ -136,6 +166,12 @@ def query():
                 local_mqtt.publish(command, cmd_topic, mqttc)
                 print(".", end="")
                 attempts += 1
+
+                if LOCAL_RADIO_CHECK <= attempts:
+                    if not radio_is_alive:
+                        print("\nlocal radio not responding")
+                #                        sys.exit()
+
                 if ATTEMPT_LIMIT <= attempts:
                     print("\nNo luck, giving up")
                     break
