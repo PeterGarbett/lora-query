@@ -120,7 +120,7 @@ def query():
     if debug:
         print("mqtt client ID:", client_id)
 
-    mqttc = local_mqtt.connect_and_subscribe("ID" + local_radio_id, in_topic, on_mqtt_message)
+    mqttc = local_mqtt.connect_and_subscribe(client_id, in_topic, on_mqtt_message)
     #local_mqtt.subscribe(out_topic, confirm_sent, client_id)
 
     mqttc.loop_start()
