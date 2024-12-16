@@ -52,7 +52,9 @@ def received_from_lora(
 
         channel_str = str(channel)
         in_mess = fromnum + ":" + channel_str + ":" + add_timestamp(message)
-        local_mqtt.publish(in_mess, in_topic, mqtt_client)
+        if not local_mqtt.publish(in_mess, in_topic, mqtt_client):
+            comms_error = True
+
     except Exception as err:
         print("converse.received error", err)
         comms_error = True
@@ -107,7 +109,9 @@ def received_from_lora(
             result = interface.sendText(
                 reply, destinationId=fromnum, channelIndex=channel
             )
-            local_mqtt.publish(resp, out_topic, mqtt_client)
+            if not local_mqtt.publish(resp, out_topic, mqtt_client):
+                comms_error = True
+
             if debug:
                 print("sendtext return code", result)
         except Exception as err:  # Want to catch timeout
@@ -174,9 +178,12 @@ def on_mqtt_message(client, userdata, msg):
         return
 
     try:
-        local_mqtt.publish(out, out_topic, mqtt_client)
         print("Transmit message:", out, "destID:", destId, "channel", channel)
         send_interface.sendText(out, destinationId=destId, channelIndex=channel)
+
+        if not local_mqtt.publish(out, out_topic, mqtt_client):
+            comms_error = True  # Communicate occurence of failure to the mainline
+
     except Exception as err:
         print(err, "Failed to send message")
         comms_error = True  # Communicate occurence of failure to the mainline
@@ -238,6 +245,13 @@ def end_loop(interface):
         mqtt_client = local_mqtt.connect_and_subscribe(
             client_id, cmd_topic, on_mqtt_message
         )
+
+        # Treat failure of mqtt broker as fatal so we attempt reconnect via systemd
+
+        if mqtt_client == None:
+            interface.close()
+            sys.exit()
+
         mqtt_client.loop_start()
 
         print("mqtt interface initialised")

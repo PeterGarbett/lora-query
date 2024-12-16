@@ -26,13 +26,14 @@ def subscribe(topic, on_message, client: mqtt_client):
     try:
         client.subscribe(topic)
         client.on_message = on_message
+        return True
     except Exception as err:
         print("Failed to subscribe to ", topic)
         print(err)
-        sys.exit()
+        return False
 
 
-def connect_and_subscribe(client_id,topic, message_handler) -> mqtt_client:
+def connect_and_subscribe(client_id, topic, message_handler) -> mqtt_client:
     """Version 2 paho mqtt connect and subscribe routine"""
 
     def on_connect(client, userdata, flags, reason_code, properties):
@@ -59,7 +60,7 @@ def connect_and_subscribe(client_id,topic, message_handler) -> mqtt_client:
 
     except Exception as err:
         print(err)
-        sys.exit()
+        return None
 
 
 def publish(msg, topic, client):
@@ -71,9 +72,11 @@ def publish(msg, topic, client):
     status = result[0]
     if status == 0:
         if debug:
-           print(f"Sent `{msg}` to mqtt topic `{topic}`")
+            print(f"Sent `{msg}` to mqtt topic `{topic}`")
+        return True
     else:
         print(f"Failed to send mqtt message to topic {topic} failure code:{status}")
+        return False
 
 
 def main():
@@ -84,7 +87,7 @@ def main():
 
     topic = "stat/tasmota_8CA606/RESULT"
     client_id = f"subscribe-{random.randint(0, 100)}"
-    client = connect_and_subscribe(client_id,topic, on_message)
+    client = connect_and_subscribe(client_id, topic, on_message)
     ptopic = "msh_test"
     publish("hello::", ptopic, client)
     client.loop_forever()
