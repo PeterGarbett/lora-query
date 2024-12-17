@@ -109,7 +109,8 @@ def form_command(radio, channel, message):
 
 
 def query():
-    """Send off a status query at intervals until a reply appears"""
+    """Default: Send off command at intervals until a reply appears
+    default to a status enquiry, can be overidden by a command line parameter"""
     global message_input
     global mqttc
     global message
@@ -123,19 +124,28 @@ def query():
     inputargs = sys.argv
     sys.argv.pop(0)
 
-    if len(inputargs) != 2:
+    if len(inputargs) < 2:
         print(usage)
         sys.exit()
-    else:
-        local_radio_id = str(inputargs[0])
-        remote_radio_id = str(inputargs[1])
+    local_radio_id = str(inputargs[0])
+    remote_radio_id = str(inputargs[1])
 
-        valid_radio_id("local", local_radio_id)
-        valid_radio_id("remote", remote_radio_id)
+    valid_radio_id("local", local_radio_id)
+    valid_radio_id("remote", remote_radio_id)
+
+    # Default to "status request" , can overide from command line
+
+    if 3 <= len(inputargs):
+        cli_command = inputargs[2]
+    else:
+        cli_command = "status request"
 
     print(f"Using local radio: {local_radio_id} remote radio: {remote_radio_id}")
 
-    command = form_command("!" + remote_radio_id, channel, "status request")
+    command = form_command("!" + remote_radio_id, channel, cli_command)
+
+    if debug:
+        print("Command is:", command)
 
     topic = mqtt_topic.BASE + local_radio_id + "/"
     cmd_topic = topic + mqtt_topic.CMD
@@ -152,6 +162,7 @@ def query():
         )
     except Exception as err:
         print(err)
+        sys.exit()
 
     mqttc.loop_start()
 
@@ -164,13 +175,12 @@ def query():
             if 0 == prod % RESEND_RATE:
                 # Command the radio via mqtt. Hope it is listening
                 local_mqtt.publish(command, cmd_topic, mqttc)
-                print(".", end="")
-                attempts += 1
+                if radio_is_alive:
+                    print(".", end="")
+                else:
+                    print("*", end="")
 
-                if LOCAL_RADIO_CHECK <= attempts:
-                    if not radio_is_alive:
-                        print("\nlocal radio not responding")
-                #                        sys.exit()
+                attempts += 1
 
                 if ATTEMPT_LIMIT <= attempts:
                     print("\nNo luck, giving up")
@@ -182,6 +192,11 @@ def query():
             try:
                 input_message = message_input.get_nowait()
                 if local_radio_id in input_message and remote_radio_id in input_message:
+
+                    if cli_command != "status request":
+                        print("Received:", input_message)
+                        break
+
                     if debug:
                         print("Received:", input_message)
                     input_message = input_message[2:]
