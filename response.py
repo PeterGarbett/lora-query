@@ -5,14 +5,16 @@ because the status is very site specific """
 
 import public_ip
 import small_timestamps
+import command_channel
 
-COMMAND_CHANNEL = 1
+COMMAND_CHANNEL = command_channel.COMMAND_CHANNEL
+
 
 action = []
 
 
 def ip(dummy):
-    ''' Responses get called with an argument we need to ditch '''
+    """Responses get called with an argument we need to ditch"""
     return public_ip.public_ip()
 
 
@@ -92,6 +94,7 @@ def response(fromnum, channel, message):
 
 
 def main():
+    ''' crude test program '''
     init_responses()
     rest_str = "status request"
     response("FAFC", COMMAND_CHANNEL, rest_str)

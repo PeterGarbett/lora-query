@@ -13,6 +13,10 @@ import small_timestamps
 import mqtt_topic
 import local_mqtt
 import mqtt_topic
+import command_channel
+
+COMMAND_CHANNEL = command_channel.COMMAND_CHANNEL
+
 
 local_radio_id = None
 remote_radio_id = None
@@ -142,7 +146,7 @@ def query():
 
     print(f"Using local radio: {local_radio_id} remote radio: {remote_radio_id}")
 
-    command = form_command("!" + remote_radio_id, channel, cli_command)
+    command = form_command("!" + remote_radio_id, COMMAND_CHANNEL, cli_command)
 
     if debug:
         print("Command is:", command)
