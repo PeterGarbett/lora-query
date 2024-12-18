@@ -1,0 +1,11 @@
+#!/bin/bash 
+#
+# Example of asking remote system for status
+# Modify as appropriate 
+# I place this on /usr/sbin/
+
+sudo su embed -c "/home/embed/lora-query/bin/python3 /home/embed/lora-query/query.py 43b6e594 43b6d0a0" 
+#sudo su embed -c "/home/embed/lora-query/bin/python3 /home/embed/lora-query/query.py 43b6d0a0 43b6e594"
+
+
+ 

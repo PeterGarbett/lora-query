@@ -49,6 +49,7 @@ lora-query.service  # Run the status handling as a service; restart on errors
 local_mqtt.py             # Local mqtt connect, publish, subscribe
 mqtt_topic.py       # Define the base topic for local mqtt
 README.md           # This document
+remote_status       # Fire off status request
 response.py         # Definition of the commands and responses.
 setup-virt          # setup python virtual environment
 
