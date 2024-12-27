@@ -67,6 +67,7 @@ def received_from_lora(
         try:
             import send_email
 
+            message=ascii(message)
             send_email.message(
                 "lora radio " + ident + " received message",
                 fromnum + ":" + channel_str + ":" + message,
