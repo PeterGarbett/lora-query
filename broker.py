@@ -4,7 +4,7 @@ default to localhost if this code does not exist """
 
 
 def broker():
-    """Wheres my mqtt broker ?"""
+    """Wheres my mqtt broker ? This should be the first name in the list of nodes """
     try:
         import find_network
 

@@ -53,8 +53,10 @@ remote_status       # Fire off status request
 response.py         # Definition of the commands and responses.
 setup-virt          # setup python virtual environment
 
-status.py       - not present. Returns a site specific status string
-find_network.py - not present. Returns location of the mqtt broker to broker.py
+status.py           # Returns a site specific status string
+find_network.py     # Returns location of the mqtt broker to broker.py
+hosts.config	    # Site dependent lists of device names in json format
+                    # mqtt server named first 
 
 
 
