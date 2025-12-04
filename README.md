@@ -55,8 +55,8 @@ setup-virt          # setup python virtual environment
 
 status.py           # Returns a site specific status string
 find_network.py     # Returns location of the mqtt broker to broker.py
-hosts.config	    # Site dependent lists of device names in json format
+lora-query.config   # Site dependent lists of device names in json format
                     # mqtt server named first 
-
+reset.py            # Not present routine to reset systems
 
 
