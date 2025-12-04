@@ -1,4 +1,4 @@
-""" Return the list of names on the current natwork, and 
+""" Return the list of names on the current network, and 
 the mqtt server which is the first name on the list """
 
 import subprocess
@@ -24,7 +24,7 @@ def local_nodes(node):
 
 # Fixed location for now .. to be improved
 
-    hosts = load_config("/home/embed/lora-query/hosts.config")
+    hosts = load_config("/etc/lora-query.config")
 
     for nodelist in enumerate(hosts):
         elements = nodelist[1]
